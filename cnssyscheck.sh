@@ -115,7 +115,7 @@ run_sar_cmd() {
   day=$(date --date='yesterday' +'%d')
   output=""
 
-	# Only capture the last seven days output
+  # Only capture the last seven days output
   while [[ $d -le 8 ]]; do
     if [[ -f "${sar_log_dir}/sa$day" ]]; then
 			cmd="${1} -f $sar_log_dir/sa$day"
@@ -125,7 +125,7 @@ run_sar_cmd() {
     d=$((d+1))
   done
 
-	echo "$output"
+  echo "$output"
 }
 
 ########
@@ -372,7 +372,7 @@ read -p "Email: " email
 
 # System's primary function?
 systypemenu() {
-				echo "
+  echo "
 What is this system's primary function?:
 
 1) Dedicated DB Server
@@ -381,34 +381,34 @@ What is this system's primary function?:
 
 }
 while true; do
-	systypemenu
-	read prime_function
-	case $prime_function in
-		"1")
-			prime_function="Dedicated DB Server"
-			printf "You selected 'Dedicated DB Server'.\n\n"; break;;
-		"2")
-			prime_function="App/Web + DB Server"
-			printf "You selected 'Web/Application + DB Server'.\n\n"; break;;
-		"3")
-			prime_function="Other"
-			printf "You selected 'Other'.\n\n"; break;;
-		* ) 
-			printf "Please answer 1-3\n";;
-	esac
+  systypemenu
+  read prime_function
+  case $prime_function in
+    "1")
+      prime_function="Dedicated DB Server"
+      printf "You selected 'Dedicated DB Server'.\n\n"; break;;
+    "2")
+      prime_function="App/Web + DB Server"
+      printf "You selected 'Web/Application + DB Server'.\n\n"; break;;
+    "3")
+      prime_function="Other"
+      printf "You selected 'Other'.\n\n"; break;;
+    * ) 
+      printf "Please answer 1-3\n";;
+  esac
 done
 
 # Is this a VM?
 while true; do
-	read -p "Is this system virtualized? [Y/N]:" virtualized
-	case $virtualized in
-		[Yy]*	)	
-			virtualized="Yes"
-			printf "This system is a VM.\n\n"; break;;
-		[Nn]*	)	
-			virtualized="No"
-			printf "This system is not a VM.\n\n"; break;;
-		esac
+  read -p "Is this system virtualized? [Y/N]:" virtualized
+  case $virtualized in
+    [Yy]*	)	
+      virtualized="Yes"
+      printf "This system is a VM.\n\n"; break;;
+    [Nn]*	)	
+      virtualized="No"
+      printf "This system is not a VM.\n\n"; break;;
+    esac
 done
 
 #########################
