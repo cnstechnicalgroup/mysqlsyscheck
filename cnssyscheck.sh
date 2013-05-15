@@ -281,72 +281,64 @@ fi
 
 ##############################################
 #
+# Confirm that lsb_release is installed...
+#
+##############################################
+
+if [[ ! -f $lsb_release && -z $lsb_release ]] ; then
+  printf "Cannot continue:\n\nlsb_release is not installed. Please install lsb-release and try again.\n\n"
+  exit 
+fi
+
+##############################################
+#
 # Various variables.
 #
 ##############################################
 
-######
-# OS #
-######
+# OS
 
 os_dist=$($lsb_release -si)
 os_ver=$($lsb_release -sr)
 os_arch=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 os_kernel=$(uname -r)
 
-########
-# Disk #
-########
-
-disk_partitions=$(df -lh)
-
-##########
-# Header #
-##########
+# Header
 
 header="### BEGIN HEADER\n
 CNS MySQL System Check ($(date +"%Y-%m-%d %H:%M:%S"))\n
 Hostname: $HOSTNAME ($OSTYPE)\n
 System: $os_dist $os_ver $os_arch / $os_kernel"
 
-#######
-# CPU #
-#######
+# CPU
 
 sar_cpu=$($sar)
 sar_io=$($sar -b)
 iostat_all=$($iostat ALL)
 
-########
-# Disk #
-########
+# Disk
 
+disk_partitions=$(df -lh)
 sar_disk=$($sar -dp)
 sar_paging=$($sar -B)
 
-##########
-# Memory #
-##########
+# Memory
 
 sar_memory=$($sar -r)
 sar_swap=$($sar -S)
 sar_hugepage=$($sar -H)
 
-###########
-# Network #
-###########
+# Network
 
 sar_network=$($sar -n DEV)
 
-#################
-# Top Processes #
-#################
+# Top Processes
 
 top_processes=$(ps aux| sort -nrk +4 | head)
 
 ##############################################
 #                                            #
-# Capture RAW MySQL data for processing...   #
+# Capture raw MySQL data for processing...   #
 #                                            #
 ##############################################
 
@@ -366,11 +358,11 @@ while ! mysql_results=$($mysql -u root -p$mysql_pwd -e "$mysql_query" &&
   read -p "Can't connect, please retry: " mysql_pwd
 done
 
-###############################
-#                             #
-# Send all output to archive. #
-#                             #
-###############################
+######################################
+#                                    #
+# Request a few details from client. #
+#                                    #
+######################################
 
 echo "
 
@@ -423,6 +415,12 @@ while true; do
 				esac
 done
 
+#########################
+#                       #
+# Prepare final output. #
+#                       #
+#########################
+
 final_output="$header
 ### BEGIN CLIENTINFO
 Full Name: $full_name
@@ -445,8 +443,16 @@ $mysql_results"
 
 date=$(LC_ALL=C date +"%Y%M%d%H%M%S")
 
+# write to gzip file
 gzipfile=cns-$HOSTNAME-$date.gz
 echo -e "$final_output" | gzip --stdout > $gzipfile
+
+#############
+#           #
+# All done. #
+#           #
+#############
+
 echo "Process complete. 
 
 Please email the $gzipfile file to support@cnstechgroup.com
@@ -457,4 +463,3 @@ Thank you,
 ~CNS Technical Group, Inc.
 
 "
-
