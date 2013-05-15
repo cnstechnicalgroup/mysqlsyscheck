@@ -5,7 +5,7 @@ This script collects performance stats from a GNU/Linux server running MySQL. Th
 ## Prerequisites
 In addition to a few standard Linux commands, this script has the following prerequisites:
 
-* **sar / iostat** -	These commands are available in the sysstat package on most modern Linux distributions. We require that both are correctly installed and the system has been collecting data for at least seven days.
+* **sar / iostat** -	These commands are available in the sysstat package on most modern Linux distributions. We require that both are correctly installed and the system has been collecting data for at least seven days (including yesterday).
 
 * **mysql** -	This is the standard MySQL command line client.
 

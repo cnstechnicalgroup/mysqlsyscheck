@@ -47,7 +47,7 @@ SCRIPT_OPT_VALUE=
 # Greeting #
 ############
 
-GREETING="
+greeting="
 Welcome to the CNS MySQL System Check.
 
 This script will gather sar and MySQL data and prepare
@@ -63,12 +63,11 @@ an underlying system configuration, or both.
 #############
 
 usage () {
-  echo "$GREETING
+  echo "$greeting
 	
 Usage: $SCRIPT_NAME [options] [arguments]
 
 Options:
-  --no-color   do not use colors
   -h, --help   display this help and exit
 "  
 }
@@ -88,19 +87,6 @@ parse_options() {
     arg="$2"
     
     case "$opt" in
-      -o|--option-with-arg)
-        SCRIPT_OPT_SET "opt1" "$arg" 1
-        shift
-        ;;
-      -O|--option-without-arg)
-        SCRIPT_OPT_SET "opt2"
-        ;;
-      -e|--option-needs-do-something-right-away)
-        do_something
-        ;;
-      --no-color)
-        SCRIPT_OPT_SET "no-color"
-        ;;
       -h|--help)
         usage
         exit 0
@@ -124,41 +110,22 @@ parse_options() {
   done
 }
 
-##################
-# Handle options #
-##################
+run_sar_cmd() {
+	d=2
+  day=$(date --date='yesterday' +'%d')
+  output=""
 
-SCRIPT_OPT_SET () {
-  if [[ ! -z "$3" ]] && [[ -z "$2" ]]; then
-    echo "$SCRIPT_NAME: missing option value -- '$opt'" >&2
-    echo "Try \`$SCRIPT_NAME --help' for more information." >&2
-    exit 1
-  fi
-  # check duplication
-  SCRIPT_OPTS=("${SCRIPT_OPTS[@]}" "$1" "$2")
-}
-
-SCRIPT_OPT () {
-  local i opt needle="$1"
-  for (( i=0; i<${#SCRIPT_OPTS[@]}; i+=2 )); do
-    opt="${SCRIPT_OPTS[i]}"
-    if [[ "$opt" == "$needle" ]]; then
-      SCRIPT_OPT_VALUE="${SCRIPT_OPTS[i+1]}"
-      return 0
+	# Only capture the last seven days output
+  while [[ $d -le 8 ]]; do
+    if [[ -f "${sar_log_dir}/sa$day" ]]; then
+			cmd="${1} -f $sar_log_dir/sa$day"
+			output=$output"\n$($cmd)"
     fi
+    day=$(date --date="$d days ago" +"%d")
+    d=$((d+1))
   done
-  SCRIPT_OPT_VALUE=
-  return 1
-}
 
-SCRIPT_SET_COLOR_VARS () {
-  local COLORS=(BLK RED GRN YLW BLU MAG CYN WHT)
-  local i SGRS=(RST BLD ___ ITA ___ BLK ___ INV)
-  for (( i=0; i<8; i++ )); do
-    eval "F${COLORS[i]}=\"\e[3${i}m\""
-    eval "B${COLORS[i]}=\"\e[4${i}m\""
-    eval   "T${SGRS[i]}=\"\e[${i}m\""
-  done
+	echo "$output"
 }
 
 ########
@@ -166,10 +133,6 @@ SCRIPT_SET_COLOR_VARS () {
 ########
 
 parse_options "$@"
-
-if ! SCRIPT_OPT "no-color"; then
-  SCRIPT_SET_COLOR_VARS
-fi
 
 ##############################################
 #
@@ -184,7 +147,7 @@ Please run this script as root or using sudo.
   exit
 fi
 
-echo "$GREETING"
+echo "$greeting"
 
 ##############################################
 #
@@ -292,6 +255,29 @@ fi
 
 ##############################################
 #
+# Identify the sysstat log directory..
+#
+##############################################
+
+sar_log_dir=/var/log/sa/ # Start with the RH default
+
+if [[ -d "${sar_log_dir}" ]]; then
+  # We are playing with a RH variant
+  printf "RH\n"
+elif [[ -d /var/log/sysstat ]]; then
+  # We are dealing with a Debian variant
+  sar_log_dir=/var/log/sysstat
+else
+  # Can't find the log director.
+  # Let's ask the user
+  while ! [[ -d $sar_log_dir ]];
+  do
+    read -e -p "Please enter the full path to the sysstat log directory: " sar_log_dir
+  done
+fi
+
+##############################################
+#
 # Various variables.
 #
 ##############################################
@@ -312,25 +298,25 @@ System: $os_dist $os_ver $os_arch / $os_kernel"
 
 # CPU
 
-sar_cpu=$($sar)
-sar_io=$($sar -b)
+sar_cpu=$(run_sar_cmd "$sar")
+sar_io=$(run_sar_cmd "$sar -b")
 iostat_all=$($iostat ALL)
 
 # Disk
 
 disk_partitions=$(df -lh)
-sar_disk=$($sar -dp)
-sar_paging=$($sar -B)
+sar_disk=$(run_sar_cmd "$sar -dp")
+sar_paging=$(run_sar_cmd "$sar -B")
 
 # Memory
 
-sar_memory=$($sar -r)
-sar_swap=$($sar -S)
-sar_hugepage=$($sar -H)
+sar_memory=$(run_sar_cmd "$sar -r")
+sar_swap=$(run_sar_cmd "$sar -S")
+sar_hugepage=$(run_sar_cmd "$sar -H")
 
 # Network
 
-sar_network=$($sar -n DEV)
+sar_network=$(run_sar_cmd "$sar -n DEV")
 
 # Top Processes
 
@@ -350,13 +336,23 @@ mysql_query="USE information_schema;
 	     SELECT ' ' AS '### BEGIN LMYS00003';
 	     SHOW VARIABLES;"
 
-read -s -p "Enter MYSQL root password: " mysql_pwd
+read -sp "Enter MYSQL root password (ENTER for blank):" mysql_pwd
 
-while ! mysql_results=$($mysql -u root -p$mysql_pwd -e "$mysql_query" && 
-            printf "\n### BEGIN LMYS00004\n" &&
-			      $mysqldump -u root -p$mysql_pwd --all-databases --no-data); do
-  read -p "Can't connect, please retry: " mysql_pwd
-done
+if [ -n "$mysql_pwd" ]; then
+  mysql_results=$($mysql -u root -p$mysql_pwd -e "$mysql_query" && 
+                printf "\n### BEGIN LMYS00004\n" &&
+                $mysqldump -u root -p$mysql_pwd --all-databases --no-data)
+else
+  mysql_results=$($mysql -u root -e "$mysql_query" && 
+                printf "\n### BEGIN LMYS00004\n" &&
+                $mysqldump -u root --all-databases --no-data)
+fi
+
+#while ! mysql_results=$($mysql -u root -p$mysql_pwd -e "$mysql_query" && 
+#            printf "\n### BEGIN LMYS00004\n" &&
+#			      $mysqldump -u root -p$mysql_pwd --all-databases --no-data); do
+#  read -s -p "Can't connect, please retry: " mysql_pwd
+#done
 
 ######################################
 #                                    #
@@ -384,7 +380,7 @@ What is this system's primary function?:
 3) Other"
 
 }
-while [ 1 ]; do
+while true; do
 	systypemenu
 	read prime_function
 	case $prime_function in
