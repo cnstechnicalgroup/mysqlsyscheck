@@ -1,6 +1,6 @@
 # CNS MySQL System Check
 ## Introduction
-This script collects performance stats from a Linux server running MySQL. The output is exported to a gzip archive.
+This script collects performance stats from a GNU/Linux server running MySQL. The output is exported to a gzip archive.
 
 ## Prerequisites
 In addition to a few standard Linux commands, this script has the following prerequisites:

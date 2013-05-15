@@ -1,7 +1,10 @@
 #!/bin/bash
-# cnssyscheck.sh - This script identifes areas of contention on a client’s server 
-#                  and whether or not MySQL is the primary cause of performance 
-#		               issues.
+# cnssyscheck.sh, ver 0.0.1
+# 
+# Summary
+# 
+# This script collects performance stats from a GNU/Linux server 
+#	running MySQL. The output is exported to a gzip archive.
 #
 # Copyright (c) 2013 CNS Technical Group, Inc.
 # 
