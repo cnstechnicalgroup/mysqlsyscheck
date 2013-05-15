@@ -16,6 +16,12 @@ The script, cnssyscheck.sh, must run as the root user or using sudo. It will not
 
 Once the script has collected the required data it will prompt you for your full name, company name, email address and a few details about the system. Upon completion, the script will present instructions explaining how to email the output to us.
 
+### Run as root
+<code>./cnssyscheck.sh</code>
+
+### Run using sudo
+<code>sudo ./cnssyscheck.sh</code>
+
 ## Support
 Please email <support@cnstechgroup.com> if you have any questions or need any help running cnssyscheck.sh
 

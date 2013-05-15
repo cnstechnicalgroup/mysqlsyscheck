@@ -404,7 +404,7 @@ done
 
 # Is this a VM?
 while true; do
-	read -p "Is this system virtualized? (Y/N):" virtualized
+	read -p "Is this system virtualized? [Y/N]:" virtualized
 	case $virtualized in
 		[Yy]*	)	
 			virtualized="Yes"
