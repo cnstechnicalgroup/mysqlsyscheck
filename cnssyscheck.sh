@@ -4,7 +4,7 @@
 # Summary
 # 
 # This script collects performance stats from a GNU/Linux server 
-#	running MySQL. The output is exported to a gzip archive.
+# running MySQL. The output is exported to a gzip archive.
 #
 # Copyright (c) 2013 CNS Technical Group, Inc.
 # 
