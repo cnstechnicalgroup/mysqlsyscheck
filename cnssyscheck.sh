@@ -300,21 +300,22 @@ System: $os_dist $os_ver $os_arch / $os_kernel"
 
 sar_cpu=$(run_sar_cmd "$sar")
 # Verify
-if [ `echo $sar_cpu | wc -l` -lt 100 ]; then
+
+if [ $(echo "$sar_cpu" | wc -l) -lt 10 ]; then
   printf "Cannot continue:\n\nNot enough sysstat CPU data available.\n\n"
   exit 
 fi
 
 sar_io=$(run_sar_cmd "$sar -b")
 # Verify
-if [ `echo $sar_io | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_io" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat IO data available.\n\n"
   exit 
 fi
 
 iostat_all=$($iostat ALL)
 # Verify
-if [ `echo $iostat_all | wc -l` -eq 0 ]; then
+if [ $(echo "$iostat_all" | wc -l) -eq 0 ]; then
   printf "Cannot continue:\n\nNo iostat data available.\n\n"
   exit 
 fi
@@ -324,14 +325,14 @@ fi
 disk_partitions=$(df -lh)
 sar_disk=$(run_sar_cmd "$sar -dp")
 # Verify
-if [ `echo $sar_disk | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_disk" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat disk data available.\n\n"
   exit 
 fi
 
 sar_paging=$(run_sar_cmd "$sar -B")
 # Verify
-if [ `echo $sar_paging | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_paging" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat paging data available.\n\n"
   exit 
 fi
@@ -340,21 +341,21 @@ fi
 
 sar_memory=$(run_sar_cmd "$sar -r")
 # Verify
-if [ `echo $sar_memory | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_memory" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat memory data available.\n\n"
   exit 
 fi
 
 sar_swap=$(run_sar_cmd "$sar -S")
 # Verify
-if [ `echo $sar_swap | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_swap" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat swap data available.\n\n"
   exit 
 fi
 
 sar_hugepage=$(run_sar_cmd "$sar -H")
 # Verify
-if [ `echo $sar_hugepage | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_hugepage" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat hugepage data available.\n\n"
   exit 
 fi
@@ -363,7 +364,7 @@ fi
 
 sar_network=$(run_sar_cmd "$sar -n DEV")
 # Verify
-if [ `echo $sar_network | wc -l` -lt 100 ]; then
+if [ $(echo "$sar_network" | wc -l) -lt 100 ]; then
   printf "Cannot continue:\n\nNot enough sysstat network data available.\n\n"
   exit 
 fi
