@@ -353,13 +353,6 @@ if [ $(echo "$sar_swap" | wc -l) -lt 100 ]; then
   exit 
 fi
 
-sar_hugepage=$(run_sar_cmd "$sar -H")
-# Verify
-if [ $(echo "$sar_hugepage" | wc -l) -lt 100 ]; then
-  printf "Cannot continue:\n\nNot enough sysstat hugepage data available.\n\n"
-  exit 
-fi
-
 # Network
 
 sar_network=$(run_sar_cmd "$sar -n DEV")
